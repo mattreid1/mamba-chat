@@ -8,10 +8,14 @@ from trainer.mamba_trainer import MambaTrainer
 
 
 def run(args):
-    model = MambaLMHeadModel.from_pretrained(
-        args.model, dtype=torch.bfloat16, device="cuda"
-    )
-
+    if args.checkpoint_dir:
+        model = MambaLMHeadModel.from_pretrained(
+            args.checkpoint_dir, dtype=torch.bfloat16, device="cuda"
+        )
+    else:
+        model = MambaLMHeadModel.from_pretrained(
+            args.model, dtype=torch.bfloat16, device="cuda"
+        )
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     tokenizer.eos_token = "<|endoftext|>"
     tokenizer.pad_token = tokenizer.eos_token
@@ -45,12 +49,20 @@ def run(args):
 
     trainer.train()
 
+    trainer.save_model("mamba-chat/final-model", False)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="state-spaces/mamba-2.8b")
     parser.add_argument(
         "--tokenizer", type=str, default="EleutherAI/gpt-neox-20b"
+    )
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default=None,
+        help="Path to the checkpoint directory from which to resume training",
     )
     parser.add_argument("--learning_rate", type=float, default=5e-5)
     parser.add_argument("--batch_size", type=int, default=4)
