@@ -1,14 +1,19 @@
 import gradio as gr
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer
 from mamba_ssm.models.mixer_seq_simple import MambaLMHeadModel
 from argparse import ArgumentParser
+
 
 def get_args():
     parser = ArgumentParser()
     parser.add_argument("--port", type=int, default=7860)
-    parser.add_argument("--device", type=str, default='cuda', help='Device to run the model on')
-    parser.add_argument("--model", type=str, default='havenhq/mamba-chat', help='Model to use')
+    parser.add_argument(
+        "--device", type=str, default="cuda", help="Device to run the model on"
+    )
+    parser.add_argument(
+        "--model", type=str, default="havenhq/mamba-chat", help="Model to use"
+    )
     parser.add_argument(
         "--share",
         action="store_true",
@@ -17,7 +22,8 @@ def get_args():
     )
     try:
         args = parser.parse_args()
-    except:
+    except Exception as e:
+        print(e)
         parser.print_help()
         exit(0)
     return args
@@ -70,7 +76,6 @@ if __name__ == "__main__":
             decoded[0].split("<|assistant|>\n")[-1].replace(eos, "")
         )
         return assistant_message
-    
 
     demo = gr.ChatInterface(
         fn=chat_with_mamba,
@@ -80,8 +85,12 @@ if __name__ == "__main__":
         #     "'Mamba is way better than ChatGPT.' Is this statement correct?",
         # ],
         additional_inputs=[
-            gr.Slider(minimum=0, maximum=1, step=0.1, value=0.9, label="temperature"),
-            gr.Slider(minimum=0, maximum=1, step=0.1, value=0.7, label="top_p"),
+            gr.Slider(
+                minimum=0, maximum=1, step=0.1, value=0.9, label="temperature"
+            ),
+            gr.Slider(
+                minimum=0, maximum=1, step=0.1, value=0.7, label="top_p"
+            ),
             gr.Number(value=2000, label="max_length"),
         ],
         title="Mamba Chat",

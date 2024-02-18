@@ -8,22 +8,23 @@ from trainer.mamba_trainer import MambaTrainer
 
 
 def run(args):
-        
-    model = MambaLMHeadModel.from_pretrained(args.model, dtype=torch.bfloat16, device="cuda")
+    model = MambaLMHeadModel.from_pretrained(
+        args.model, dtype=torch.bfloat16, device="cuda"
+    )
 
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     tokenizer.eos_token = "<|endoftext|>"
     tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.chat_template = AutoTokenizer.from_pretrained("HuggingFaceH4/zephyr-7b-beta").chat_template
-
+    tokenizer.chat_template = AutoTokenizer.from_pretrained(
+        "HuggingFaceH4/zephyr-7b-beta"
+    ).chat_template
 
     data_module = ChatDataModule(
         tokenizer=tokenizer,
         data_path=args.data_path,
         conversation_template=tokenizer.chat_template,
-        max_tokens=2048
+        max_tokens=2048,
     )
-
 
     trainer = MambaTrainer(
         model=model,
@@ -48,12 +49,16 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="state-spaces/mamba-2.8b")
-    parser.add_argument("--tokenizer", type=str, default="EleutherAI/gpt-neox-20b")
+    parser.add_argument(
+        "--tokenizer", type=str, default="EleutherAI/gpt-neox-20b"
+    )
     parser.add_argument("--learning_rate", type=float, default=5e-5)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
     parser.add_argument("--optim", type=str, default="adamw_torch")
-    parser.add_argument("--data_path", type=str, default="./data/ultrachat_small.jsonl")
+    parser.add_argument(
+        "--data_path", type=str, default="./data/ultrachat_small.jsonl"
+    )
     parser.add_argument("--num_epochs", type=int, default=1)
     args = parser.parse_args()
 
